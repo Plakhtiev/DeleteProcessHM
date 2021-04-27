@@ -1,63 +1,62 @@
 #include <iostream>
 #include<Windows.h>
-#include <tchar.h>
 #include <psapi.h>
 #include <stdio.h>
 
 
-bool CheckAndDeleteProcess(DWORD processID, const wchar_t processName[MAX_PATH])
+bool CheckAndDeleteProcess(DWORD processID, const wchar_t processNameForDel[MAX_PATH])
 {
-	TCHAR szProcessName[MAX_PATH];
+	wchar_t currProcessName[MAX_PATH];
 
 	// Get a handle to the process.
 
-	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS,
+	HANDLE currProcess = OpenProcess(PROCESS_ALL_ACCESS,
 		FALSE, processID);
 	LPDWORD exitCode = 0;
 
 	// Get the process name and delete it by name.
 
-	if (NULL != hProcess)
+	if (NULL != currProcess)
 	{
-		HMODULE hMod;
-		DWORD cbNeeded;
+		HMODULE arrayListMod;
+		DWORD sizeOfArray;
 
-		if (EnumProcessModules(hProcess, &hMod, sizeof(hMod),
-			&cbNeeded))
+		if (EnumProcessModules(currProcess, &arrayListMod, sizeof(arrayListMod),
+			&sizeOfArray))
 		{
-			GetModuleBaseName(hProcess, hMod, szProcessName,
-				sizeof(szProcessName) / sizeof(TCHAR));
+			GetModuleBaseName(currProcess, arrayListMod, currProcessName,
+				sizeof(currProcessName) / sizeof(wchar_t));
 		}
-		if (*szProcessName == *processName) {
+		if (*currProcessName == *processNameForDel) {
 			TerminateProcess(
-				hProcess,
+				currProcess,
 				1
 			);
 		}
 
-		CloseHandle(hProcess);
+		CloseHandle(currProcess);
 		return 0;
 	}
 }
 
-void DeleteProcName(const wchar_t processName[MAX_PATH]) {
-	TCHAR szProcessName[MAX_PATH];
+void DeleteProcName(const wchar_t processNameForDel[MAX_PATH]) {
+	wchar_t currProcessName[MAX_PATH];
 
 	// Get the list of process identifiers.
-	DWORD aProcesses[1024], cbNeeded, cProcesses;
+	DWORD arrayProcesses[1024], sizeOfArray, countProcessIdentifiers;
 
-	if (!EnumProcesses(aProcesses, sizeof(aProcesses), &cbNeeded)) {
+	if (!EnumProcesses(arrayProcesses, sizeof(arrayProcesses), &sizeOfArray)) {
 		return;
 	}
 	// Calculate how many process identifiers were returned.
 
-	cProcesses = cbNeeded / sizeof(DWORD);
+	countProcessIdentifiers = sizeOfArray / sizeof(DWORD);
 
-	for (size_t i = 0; i < cProcesses; i++)
+	for (size_t i = 0; i < countProcessIdentifiers; i++)
 	{
-		if (aProcesses[i] != 0)
+		if (arrayProcesses[i] != 0)
 		{
-			if (CheckAndDeleteProcess(aProcesses[i], processName)) {
+			if (CheckAndDeleteProcess(arrayProcesses[i], processNameForDel)) {
 			};
 		}
 	}
