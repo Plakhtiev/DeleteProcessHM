@@ -57,6 +57,7 @@ void DeleteProcName(const wchar_t processNameForDel[MAX_PATH]) {
 		if (arrayProcesses[i] != 0)
 		{
 			if (CheckAndDeleteProcess(arrayProcesses[i], processNameForDel)) {
+				return;
 			};
 		}
 	}
